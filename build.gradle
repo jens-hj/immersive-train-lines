@@ -1,0 +1,141 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'com.modrinth.minotaur' version '2.10.0'
+}
+
+java { withSourcesJar(); toolchain.languageVersion = JavaLanguageVersion.of(21) }
+base { archivesName = 'immersive-train-lines' }
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository { maven { name = 'createmod'; url = 'https://maven.createmod.net' } }
+        filter {
+            includeGroup 'com.simibubi.create'
+            includeGroupAndSubgroups 'net.createmod'
+            includeGroup 'dev.engine-room.flywheel'
+            includeGroup 'dev.engine-room.vanillin'
+            includeGroup 'com.tterrag.registrate'
+        }
+    }
+}
+
+sourceSets {
+    // Signature-only stand-ins for Hoofprint / Surveyor (Fabric mods run through Connector, so their
+    // published jars are not in Mojang names). Never packaged.
+    stubs
+    testmod {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
+dependencies {
+    compileOnly sourceSets.stubs.output
+    compileOnly("com.simibubi.create:create-${project.minecraft_version}:${project.create_version}:slim") { transitive = false }
+    compileOnly("net.createmod.ponder:ponder-neoforge:${project.ponder_version}+mc${project.minecraft_version}") { transitive = false }
+
+    testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def clientDirectory = file('run')
+def showcaseDirectory = layout.buildDirectory.dir('run/showcase').get().asFile
+// -PpackMods=<dir> symlinks mod jars (Create, Connector, Hoofprint ...) from a modpack instance into the run.
+def packMods = providers.gradleProperty('packMods')
+def packModNames = providers.gradleProperty('packModNames').getOrElse(
+    'create-1.21.1,connector-,forgified-fabric-api,surveyor,hoofprint,immersiveminimaps,asphodel_api')
+neoForge {
+    version = project.neo_version
+    addModdingDependenciesTo(sourceSets.stubs)
+    mods {
+        immersive_train_lines { sourceSet sourceSets.main }
+        immersive_train_lines_test { sourceSet sourceSets.testmod }
+    }
+    runs {
+        client { client() }
+        // Scripted screenshots of the map, see src/testmod and scripts/headless.py
+        showcase {
+            client()
+            sourceSet = sourceSets.testmod
+            gameDirectory = showcaseDirectory
+            programArguments.addAll('--width', '1280', '--height', '720')
+            systemProperty 'immersivetrainlines.showcase', layout.buildDirectory.dir('showcase').get().asFile.absolutePath
+        }
+    }
+    runs.configureEach { jvmArgument '-Xmx3G' }
+}
+
+def prepareRun = { File directory ->
+    directory.mkdirs()
+    // Keep every graphical launch silent and free of first-run screens.
+    def options = new File(directory, 'options.txt')
+    def lines = options.exists() ? options.readLines().findAll {
+        !(it.split(':', 2)[0] in ['soundCategory_master', 'soundCategory_music', 'onboardAccessibility',
+                                  'narrator', 'pauseOnLostFocus', 'fullscreen', 'tutorialStep'])
+    } : []
+    options.text = (lines + ['soundCategory_master:0.0', 'soundCategory_music:0.0',
+        'onboardAccessibility:false', 'narrator:0', 'pauseOnLostFocus:false', 'fullscreen:false',
+        'tutorialStep:none']).join('\n') + '\n'
+    def mods = new File(directory, 'mods'); mods.mkdirs()
+    mods.listFiles().findAll { java.nio.file.Files.isSymbolicLink(it.toPath()) }.each { it.delete() }
+    if (packMods.isPresent()) {
+        def wanted = packModNames.split(',').findAll { it }
+        new File(packMods.get()).listFiles().findAll { jar ->
+            jar.name.endsWith('.jar') && !jar.name.startsWith('immersive-train-lines-') &&
+                wanted.any { jar.name.startsWith(it) }
+        }.each { source ->
+            java.nio.file.Files.createSymbolicLink(new File(mods, source.name).toPath(), source.toPath().toRealPath())
+        }
+    }
+}
+tasks.named('runClient') { doFirst { prepareRun(clientDirectory) } }
+tasks.named('runShowcase') {
+    doFirst {
+        prepareRun(showcaseDirectory)
+        new File(showcaseDirectory, 'saves/showcase').deleteDir()
+    }
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'immersivetrainlines.preview', layout.buildDirectory.dir('preview').get().asFile.absolutePath
+}
+
+tasks.withType(Jar).configureEach { from('LICENSE') }
+def releaseVersion = project.version.toString()
+processResources {
+    inputs.property 'version', releaseVersion
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: releaseVersion }
+}
+
+def modrinthToken = providers.environmentVariable('MODRINTH_TOKEN').orElse(
+    providers.fileContents(layout.projectDirectory.file(
+        "${System.getProperty('user.home')}/.config/modrinth-token")).asText.map { it.trim() })
+def currentChangelog = providers.fileContents(layout.projectDirectory.file('CHANGELOG.md')).asText.map { text ->
+    def section = text.split(/(?m)^## /).find { it.startsWith("${version}\n") || it.startsWith("${version}\r") }
+    section ? section.substring(section.indexOf('\n') + 1).trim() : ''
+}
+modrinth {
+    debugMode = providers.gradleProperty('modrinthDryRun').isPresent()
+    token = modrinthToken
+    projectId = 'immersive-train-lines'
+    versionNumber = project.version.toString()
+    versionName = "${project.version} (NeoForge ${project.minecraft_version})"
+    versionType = 'release'
+    uploadFile = jar
+    additionalFiles { sourcesJar(tasks.named('sourcesJar')) }
+    gameVersions = [project.minecraft_version]
+    loaders = ['neoforge']
+    changelog = currentChangelog
+    environment = 'client_only'
+    dependencies {
+        required.project 'create'
+        required.project 'hoofprint'
+        optional.project 'immersive-minimaps'
+    }
+    syncBodyFrom = file('docs/MODRINTH.md').text
+}
+tasks.named('modrinth') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }
+tasks.named('modrinthSyncBody') { notCompatibleWithConfigurationCache('Minotaur reads Task.project') }

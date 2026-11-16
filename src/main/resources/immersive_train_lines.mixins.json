@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.jensh.immersivetrainlines.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "HoofprintScreenMixin",
+    "MinimapOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
