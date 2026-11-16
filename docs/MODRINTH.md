@@ -2,7 +2,7 @@
 
 Your [Create](https://modrinth.com/mod/create) railways, drawn onto the [Hoofprint](https://modrinth.com/mod/hoofprint) world map and the [Immersive Minimaps](https://modrinth.com/mod/immersive-minimaps) minimap the way a cartographer would have drawn them: in ink, on the paper, and only where the map has actually been.
 
-<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-ink.png" width="900"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-ink.png" alt="Hoofprint world map with a Create railway drawn in ink: two lines crossing in a forest, one bridging a canal and tunnelling through a hill" width="900"></p>
 
 ## Part of the map, not on top of it
 
@@ -18,7 +18,7 @@ Your [Create](https://modrinth.com/mod/create) railways, drawn onto the [Hoofpri
 | Ink (default) | Rails |
 | --- | --- |
 | The paper-map railway symbol: an ink line with cross-ticks. Tunnels dashed, bridges cased. | The track seen from above: iron rail on wooden sleepers. Tunnels are out of sight until you switch to cave mode. |
-| <img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-ink-close.png" width="440"> | <img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-rails-close.png" width="440"> |
+| <img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-ink-close.png" alt="Close-up of the ink style: cross-ticked line, cased bridge over water, a train at Riverside station and a dashed tunnel under a hill" width="440"> | <img src="https://raw.githubusercontent.com/jens-hj/immersive-train-lines/main/docs/gallery/map-rails-close.png" alt="Close-up of the rails style: grey rail on brown sleepers, a girder bridge over water, and the line disappearing under a hill" width="440"> |
 
 ## Settings
 
