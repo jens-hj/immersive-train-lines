@@ -1,0 +1,18 @@
+{
+  "immersive_train_lines.map.at_platform": "At the platform: %s",
+  "immersive_train_lines.map.standing_at": "Standing at %s",
+  "immersive_train_lines.map.bound_for": "Bound for %s",
+  "immersive_train_lines.configuration.title": "Immersive Train Lines",
+  "immersive_train_lines.configuration.lineStyle": "Line style",
+  "immersive_train_lines.configuration.lineStyle.tooltip": "INK: paper-map railway symbol with dashed tunnels and cased bridges. RAILS: the track seen from above; tunnels only show in cave mode.",
+  "immersive_train_lines.configuration.chartedOnly": "Charted ground only",
+  "immersive_train_lines.configuration.chartedOnly.tooltip": "Only draw railways and stations on ground your map has already charted.",
+  "immersive_train_lines.configuration.trains": "Trains",
+  "immersive_train_lines.configuration.trains.tooltip": "REPORTED: trains near you and trains standing at a charted station. ALL: every train on charted ground. NONE: no trains.",
+  "immersive_train_lines.configuration.nearbyRange": "Nearby range",
+  "immersive_train_lines.configuration.nearbyRange.tooltip": "How close a train must be for you to mark it on the map yourself.",
+  "immersive_train_lines.configuration.stationLabels": "Always label stations",
+  "immersive_train_lines.configuration.stationLabels.tooltip": "Always write station names on the world map, not only on hover or while inspecting.",
+  "immersive_train_lines.configuration.minimap": "Draw on minimap",
+  "immersive_train_lines.configuration.minimap.tooltip": "Draw railways on the Immersive Minimaps minimap as well."
+}

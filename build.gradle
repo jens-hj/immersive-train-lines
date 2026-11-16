@@ -46,6 +46,7 @@ def showcaseDirectory = layout.buildDirectory.dir('run/showcase').get().asFile
 def packMods = providers.gradleProperty('packMods')
 def packModNames = providers.gradleProperty('packModNames').getOrElse(
     'create-1.21.1,connector-,forgified-fabric-api,surveyor,hoofprint,immersiveminimaps,asphodel_api')
+def cleanClient = providers.gradleProperty('cleanClient')
 neoForge {
     version = project.neo_version
     addModdingDependenciesTo(sourceSets.stubs)
@@ -64,7 +65,12 @@ neoForge {
             systemProperty 'immersivetrainlines.showcase', layout.buildDirectory.dir('showcase').get().asFile.absolutePath
         }
     }
-    runs.configureEach { jvmArgument '-Xmx3G' }
+    runs.configureEach {
+        jvmArgument '-Xmx3G'
+        // Connector needs an unpatched client jar to transform Fabric mods in a dev run:
+        // -PcleanClient=<launcher>/libraries/net/minecraft/client/<ver>/client-<ver>-srg.jar
+        if (cleanClient.isPresent()) systemProperty 'connector.clean.path', cleanClient.get()
+    }
 }
 
 def prepareRun = { File directory ->

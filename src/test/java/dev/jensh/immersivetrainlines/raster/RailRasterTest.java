@@ -118,7 +118,7 @@ class RailRasterTest {
 		int drawn = 0;
 		for (int x = 160; x < 192; x++) {
 			if (ink.pixel(false, x, 40) != 0) drawn++;
-			assertEquals(RailRaster.INK, ink.pixel(true, x, 40));
+			assertEquals(RailRaster.PARCHMENT, ink.pixel(true, x, 40));
 			assertEquals(0, ink.pixel(false, x, 39), "no ticks over a tunnel");
 		}
 		assertEquals(16, drawn);

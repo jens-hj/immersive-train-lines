@@ -25,7 +25,7 @@ public final class RailRaster {
 	/** Blocks of cover above the rails before a stretch counts as a tunnel. */
 	static final int TUNNEL_COVER = 4;
 	/** How far the ground must drop on both sides before a stretch counts as a bridge. */
-	static final int BRIDGE_DROP = 3;
+	static final int BRIDGE_DROP = 5;
 	static final int MIN_RUN = 3;
 
 	enum Kind { SURFACE, TUNNEL, BRIDGE }
@@ -36,7 +36,7 @@ public final class RailRaster {
 	private final Terrain terrain;
 	private final LineStyle style;
 	private final boolean chartedOnly;
-	// Painted back to front: sleepers/ticks/casings, then the line itself, then stations.
+	// Painted back to front: sleepers and casings, then the line and its ticks, then stations.
 	private final List<List<int[]>> passes = List.of(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
 	private RailRaster(Terrain terrain, LineStyle style, boolean chartedOnly) {
@@ -168,22 +168,25 @@ public final class RailRaster {
 		}
 	}
 
+	// Cave maps are dark, so underground the line is drawn in chalk rather than ink.
 	private void inkStep(int i, int x, int z, int px, int pz, Kind kind, boolean runEdge, boolean mouth) {
 		switch (kind) {
 			case SURFACE -> {
 				put(1, false, x, z, INK);
-				put(1, true, x, z, alpha(INK, 0x55));
-				if (i % 4 == 2 || mouth) sides(0, false, x, z, px, pz, INK);
+				put(1, true, x, z, alpha(PARCHMENT, 0x70));
+				// A faint paper halo keeps a one-pixel line readable over dark forest.
+				sides(0, false, x, z, px, pz, alpha(PARCHMENT, 0x60));
+				if (i % 4 == 2 || mouth) sides(1, false, x, z, px, pz, INK);
 			}
 			case BRIDGE -> {
 				put(1, false, x, z, INK);
-				put(1, true, x, z, alpha(INK, 0x55));
+				put(1, true, x, z, alpha(PARCHMENT, 0x70));
 				sides(0, false, x, z, px, pz, runEdge || mouth ? INK : PARCHMENT);
 			}
 			case TUNNEL -> {
 				if (i % 4 < 2) put(1, false, x, z, alpha(INK, 0x99));
-				put(1, true, x, z, INK);
-				if (i % 4 == 2) sides(0, true, x, z, px, pz, INK);
+				put(1, true, x, z, PARCHMENT);
+				if (i % 4 == 2) sides(1, true, x, z, px, pz, PARCHMENT);
 			}
 		}
 	}
